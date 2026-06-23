@@ -1,0 +1,54 @@
+name: Sync Bizkaibus Feed
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  actualizar-y-publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Descargar feeds SIRI de Bizkaibus
+        run: |
+          mkdir -p feeds
+          curl -sSL --fail \
+            -o feeds/bizkaibus-vehicle-positions.xml \
+            "https://ctb-siri.s3.eu-south-2.amazonaws.com/bizkaibus-vehicle-positions.xml"
+          curl -sSL --fail \
+            -o feeds/bizkaibus-trip-updates.xml \
+            "https://ctb-siri.s3.eu-south-2.amazonaws.com/bizkaibus-trip-updates.xml"
+          curl -sSL --fail \
+            -o feeds/bizkaibus-service-alerts.xml \
+            "https://ctb-siri.s3.eu-south-2.amazonaws.com/bizkaibus-service-alerts.xml"
+          echo "Descarga completada:"
+          ls -la feeds/
+
+      - name: Preparar carpeta de publicación
+        run: |
+          mkdir -p _site
+          cp -r feeds _site/feeds
+          cp bizkaibus-mapa.html _site/index.html
+
+      - name: Subir artefacto de Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Publicar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
