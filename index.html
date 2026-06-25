@@ -21,6 +21,26 @@
   html,body{margin:0;min-height:100%;background:var(--fondo);color:var(--hueso);
     font-family:'Helvetica Neue',Arial,sans-serif;}
 
+  body{position:relative;}
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:-2;
+    background-image:url('img/fondo-portada.jpg');
+    background-size:cover;
+    background-position:center 35%;
+    filter:blur(6px) saturate(85%) brightness(0.55);
+    transform:scale(1.05);
+  }
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    background:linear-gradient(180deg, rgba(19,19,15,.55) 0%, rgba(19,19,15,.78) 55%, rgba(19,19,15,.92) 100%);
+  }
+
   .marquee{
     background:var(--panel);
     border-bottom:1px solid var(--linea);
@@ -105,16 +125,10 @@
     margin:0 0 14px;
   }
   .tarjeta h2{
-    margin:0 0 6px;
+    margin:0 0 16px;
     font-size:21px;
     font-weight:800;
     color:var(--acento);
-  }
-  .tarjeta p.desc{
-    margin:0 0 18px;
-    color:var(--gris);
-    font-size:13px;
-    line-height:1.5;
   }
   .tarjeta .estado{
     display:inline-flex;align-items:center;gap:6px;
@@ -183,7 +197,6 @@
         id: 'bizkaibus',
         codigo: 'A · INTERURBANO',
         nombre: 'Bizkaibus',
-        desc: 'Autobuses interurbanos de Bizkaia, posición en directo sobre el mapa.',
         color: '#1F8A4C',
         activo: true,
         href: 'bizkaibus-mapa.html'
@@ -192,7 +205,6 @@
         id: 'metrobilbao',
         codigo: 'L1 · L2 · L3',
         nombre: 'Metro Bilbao',
-        desc: 'Líneas de metro del Gran Bilbao.',
         color: '#E8740C',
         activo: false
       },
@@ -200,7 +212,6 @@
         id: 'bilbobus',
         codigo: 'URBANO',
         nombre: 'Bilbobus',
-        desc: 'Autobuses urbanos de la ciudad de Bilbao.',
         color: '#D7282F',
         activo: false
       },
@@ -208,7 +219,6 @@
         id: 'euskotren',
         codigo: 'TRENA',
         nombre: 'Euskotren',
-        desc: 'Red de tren de vía estrecha del País Vasco.',
         color: '#0F5FA6',
         activo: false
       },
@@ -216,7 +226,6 @@
         id: 'renfe',
         codigo: 'CERCANÍAS',
         nombre: 'Renfe',
-        desc: 'Cercanías y media distancia en Bizkaia.',
         color: '#6B3FA0',
         activo: false
       }
@@ -235,7 +244,6 @@
       tarjeta.innerHTML =
         '<p class="codigo">' + op.codigo + '</p>' +
         '<h2>' + op.nombre + '</h2>' +
-        '<p class="desc">' + op.desc + '</p>' +
         (op.activo
           ? '<span class="estado activo"><span class="dot"></span>En directo</span>'
           : '<span class="estado pendiente">Próximamente</span>');
