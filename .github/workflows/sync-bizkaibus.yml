@@ -42,7 +42,7 @@ jobs:
         run: |
           mkdir -p _site
           cp -r feeds _site/feeds
-          cp bizkaibus-mapa.html _site/index.html
+          cp *.html _site/
 
       - name: Subir artefacto de Pages
         uses: actions/upload-pages-artifact@v3
