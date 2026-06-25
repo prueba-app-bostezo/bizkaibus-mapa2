@@ -31,7 +31,7 @@
     z-index:-2;
     background-image:url('img/fondo-portada.jpg');
     background-size:cover;
-    background-position:center 35%;
+    background-position:center bottom;
     filter:blur(2px) saturate(90%) brightness(0.65);
   }
   body::after{
@@ -84,10 +84,13 @@
   }
 
   .red{
-    display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
-    gap:18px;
+    
+    
+    gap:28px;
     margin-top:28px;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
   }
 
   .tarjeta{
@@ -97,6 +100,8 @@
     border:1px solid var(--linea);
     border-radius:14px;
     padding:22px 20px;
+    width:280px;
+    flex:0 0 280px;
     text-align:left;
     cursor:pointer;
     overflow:hidden;
