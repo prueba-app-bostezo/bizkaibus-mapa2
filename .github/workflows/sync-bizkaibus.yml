@@ -42,6 +42,7 @@ jobs:
         run: |
           mkdir -p _site
           cp -r feeds _site/feeds
+          cp -r img _site/img 2>/dev/null || true
           cp *.html _site/
 
       - name: Subir artefacto de Pages
