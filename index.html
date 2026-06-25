@@ -11,11 +11,11 @@
     --hueso:#F6F2EA;
     --gris:#8A857B;
     --linea:#33312A;
-    --bizkaibus:#E84E1B;
-    --metrobilbao:#D7282F;
-    --bilbobus:#1F8A4C;
+    --bizkaibus:#1F8A4C;
+    --metrobilbao:#E8740C;
+    --bilbobus:#D7282F;
     --euskotren:#0F5FA6;
-    --renfe:#0F5FA6;
+    --renfe:#6B3FA0;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;min-height:100%;background:var(--fondo);color:var(--hueso);
@@ -72,6 +72,7 @@
   .tarjeta{
     position:relative;
     background:var(--panel);
+    color:var(--hueso);
     border:1px solid var(--linea);
     border-radius:14px;
     padding:22px 20px;
@@ -80,6 +81,7 @@
     overflow:hidden;
     transition:transform .15s ease, border-color .15s ease;
     -webkit-tap-highlight-color:transparent;
+    font-family:inherit;
   }
   .tarjeta::before{
     content:"";
@@ -106,6 +108,7 @@
     margin:0 0 6px;
     font-size:21px;
     font-weight:800;
+    color:var(--acento);
   }
   .tarjeta p.desc{
     margin:0 0 18px;
@@ -181,7 +184,7 @@
         codigo: 'A · INTERURBANO',
         nombre: 'Bizkaibus',
         desc: 'Autobuses interurbanos de Bizkaia, posición en directo sobre el mapa.',
-        color: '#E84E1B',
+        color: '#1F8A4C',
         activo: true,
         href: 'bizkaibus-mapa.html'
       },
@@ -190,7 +193,7 @@
         codigo: 'L1 · L2 · L3',
         nombre: 'Metro Bilbao',
         desc: 'Líneas de metro del Gran Bilbao.',
-        color: '#D7282F',
+        color: '#E8740C',
         activo: false
       },
       {
@@ -198,7 +201,7 @@
         codigo: 'URBANO',
         nombre: 'Bilbobus',
         desc: 'Autobuses urbanos de la ciudad de Bilbao.',
-        color: '#1F8A4C',
+        color: '#D7282F',
         activo: false
       },
       {
@@ -214,7 +217,7 @@
         codigo: 'CERCANÍAS',
         nombre: 'Renfe',
         desc: 'Cercanías y media distancia en Bizkaia.',
-        color: '#0F5FA6',
+        color: '#6B3FA0',
         activo: false
       }
     ];
