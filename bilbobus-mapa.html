@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bilbobus en directo</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<style>
+  :root{
+    --rojo:#D7282F;--rojo-osc:#A81F25;--tinta:#1C1B1A;
+    --hueso:#F6F2EA;--gris:#6B6660;--linea:#DCD5C8;
+    --verde-ok:#2E7D4F;--rojo-err:#B3261E;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;font-family:'Helvetica Neue',Arial,sans-serif;background:var(--hueso);color:var(--tinta);}
+  #app{display:flex;flex-direction:column;height:100%;}
+  header{display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--tinta);color:var(--hueso);border-bottom:4px solid var(--rojo);flex-wrap:wrap;}
+  .brand{display:flex;align-items:baseline;gap:8px;margin-right:auto;}
+  .brand .mark{font-weight:800;font-size:20px;letter-spacing:.5px;color:var(--rojo);}
+  .brand .sub{font-size:12px;color:#C9C4BC;font-weight:400;}
+  .status{font-size:12px;display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:20px;background:#2A2826;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--gris);transition:background .2s;}
+  .status.ok .dot{background:var(--verde-ok);animation:pulse 2s infinite;}
+  .status.err .dot{background:var(--rojo-err);}
+  .status.loading .dot{background:#E8B23D;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(46,125,79,.5);}70%{box-shadow:0 0 0 6px rgba(46,125,79,0);}100%{box-shadow:0 0 0 0 rgba(46,125,79,0);}}
+  .controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .controls input[type="text"]{padding:7px 10px;border-radius:6px;border:1px solid #3a3835;background:#2A2826;color:var(--hueso);font-size:13px;width:120px;}
+  .controls input[type="text"]::placeholder{color:#8a857d;}
+  .controls select{padding:7px 8px;border-radius:6px;border:1px solid #3a3835;background:#2A2826;color:var(--hueso);font-size:13px;}
+  .btn-refrescar{border:1px solid var(--rojo);background:transparent;color:var(--rojo);padding:7px 12px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600;transition:background .15s,color .15s;}
+  .btn-refrescar:hover{background:var(--rojo);color:var(--hueso);}
+  main{position:relative;flex:1;min-height:0;}
+  #map{position:absolute;inset:0;}
+  .leyenda{position:absolute;bottom:16px;left:16px;z-index:500;background:rgba(28,27,26,0.92);color:var(--hueso);padding:10px 14px;border-radius:8px;font-size:12px;display:flex;flex-direction:column;gap:4px;box-shadow:0 4px 14px rgba(0,0,0,.25);}
+  .leyenda b{color:var(--rojo);font-size:13px;}
+  .aviso{position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:600;max-width:560px;width:calc(100% - 32px);background:#FFF1EF;border:1px solid var(--rojo);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.5;box-shadow:0 8px 22px rgba(0,0,0,.18);display:none;}
+  .aviso.show{display:block;}
+  .aviso h3{margin:0 0 6px;font-size:14px;color:var(--rojo-osc);}
+  .leaflet-popup-content-wrapper{border-radius:10px;}
+  .popup-linea{display:inline-block;background:var(--rojo);color:white;font-weight:800;font-size:14px;padding:2px 8px;border-radius:5px;margin-bottom:6px;}
+  .popup-dest{font-weight:600;font-size:13px;margin:0 0 4px;}
+  .popup-meta{font-size:12px;color:var(--gris);margin:2px 0;}
+  .popup-retraso-tarde{color:var(--rojo-err);font-weight:600;}
+  .popup-retraso-pronto{color:var(--verde-ok);font-weight:600;}
+  footer{padding:7px 16px;font-size:11px;color:var(--gris);background:var(--hueso);border-top:1px solid var(--linea);display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">
+      <span class="mark">BILBOBUS</span>
+      <span class="sub">posición de autobuses en directo</span>
+    </div>
+    <div class="controls">
+      <input type="text" id="filtroLinea" placeholder="Filtrar línea, ej. 1">
+      <select id="intervalo">
+        <option value="10000">Cada 10 s</option>
+        <option value="20000" selected>Cada 20 s</option>
+        <option value="30000">Cada 30 s</option>
+        <option value="60000">Cada 60 s</option>
+      </select>
+      <button class="btn-refrescar" id="btnRefrescar">Actualizar ahora</button>
+    </div>
+    <div class="status loading" id="status">
+      <span class="dot"></span>
+      <span id="statusTexto">Conectando…</span>
+    </div>
+  </header>
+  <main>
+    <div id="map"></div>
+    <div class="leyenda">
+      <b id="contadorBuses">0 autobuses</b>
+      <span id="ultimaActualizacion">esperando primera lectura…</span>
+    </div>
+    <div class="aviso" id="aviso">
+      <h3>No se ha podido leer el feed en directo</h3>
+      <div id="avisoTexto"></div>
+    </div>
+  </main>
+  <footer>
+    <span id="fuenteTexto">Fuente: GTFS-Realtime — Ayuntamiento de Bilbao / Consorcio de Transportes de Bizkaia</span>
+    <span>Mapa © OpenStreetMap</span>
+  </footer>
+</div>
+
+
+<script>
+(function(){
+  var URL_FEED  = "https://bizkaibus.cuentasmurf7.workers.dev?feed=bilbobus";
+  var URL_RUTAS = "feeds/rutas_bilbobus.json";
+  var CENTRO    = [43.2630, -2.9350]; // Bilbao centro
+  var ZOOM_INICIAL = 13; // más cercano que Bizkaibus: red urbana, no toda la provincia
+
+  var map, capaBuses;
+  var intervaloId  = null;
+  var rutasCache   = null;
+  var rutaActual   = null;
+  var cacheVehiculos = [];
+
+  // ------------------------------------------------------------------
+  function init(){
+    map = L.map('map', {zoomControl:true}).setView(CENTRO, ZOOM_INICIAL);
+    // Se quita el logo/marca de Leaflet del control de atribución del mapa
+    // (atributo "prefix" del attributionControl), manteniendo la atribución
+    // a OpenStreetMap, que sí es obligatoria por sus términos de uso.
+    map.attributionControl.setPrefix(false);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      maxZoom:19,
+      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+    capaBuses = L.layerGroup().addTo(map);
+
+    map.on('click', function(e){
+      // Borrar ruta al clicar en el mapa fuera de un marcador
+      if(!e.originalEvent._marcadorClick) borrarRuta();
+    });
+
+    document.getElementById('btnRefrescar').addEventListener('click', cargar);
+    document.getElementById('filtroLinea').addEventListener('input', pintarDesdeCache);
+    document.getElementById('intervalo').addEventListener('change', reiniciarTemporizador);
+
+    cargarRutas();
+    cargar();
+    reiniciarTemporizador();
+  }
+
+  // ------------------------------------------------------------------
+  // RUTAS
+  // ------------------------------------------------------------------
+  function cargarRutas(){
+    fetch(URL_RUTAS)
+      .then(function(r){ return r.json(); })
+      .then(function(d){ rutasCache = d; })
+      .catch(function(){ rutasCache = {}; });
+  }
+
+  function mostrarRuta(linea){
+    borrarRuta();
+    if(!rutasCache || !linea) return;
+    var coords = rutasCache[linea];
+    if(!coords || coords.length < 2) return;
+    // rutas_bilbobus.json: [[lat,lon],...] — Leaflet usa [lat,lon], perfecto
+    rutaActual = L.polyline(coords,{
+      color:'#A81F25', weight:4, opacity:0.85, lineJoin:'round'
+    }).addTo(map);
+  }
+
+  function borrarRuta(){
+    if(rutaActual){ map.removeLayer(rutaActual); rutaActual = null; }
+  }
+
+  // ------------------------------------------------------------------
+  // TEMPORIZADOR
+  // ------------------------------------------------------------------
+  function reiniciarTemporizador(){
+    if(intervaloId) clearInterval(intervaloId);
+    var ms = parseInt(document.getElementById('intervalo').value, 10);
+    intervaloId = setInterval(cargar, ms);
+  }
+
+  // ------------------------------------------------------------------
+  // ESTADO
+  // ------------------------------------------------------------------
+  function setStatus(estado, texto){
+    document.getElementById('status').className = 'status ' + estado;
+    document.getElementById('statusTexto').textContent = texto;
+  }
+  function mostrarAviso(html){
+    document.getElementById('avisoTexto').innerHTML = html;
+    document.getElementById('aviso').classList.add('show');
+  }
+  function ocultarAviso(){
+    document.getElementById('aviso').classList.remove('show');
+  }
+
+  // ------------------------------------------------------------------
+  // CARGA FEED
+  // ------------------------------------------------------------------
+  function cargar(){
+    setStatus('loading','Actualizando…');
+    fetch(URL_FEED + '&_=' + Date.now(), {cache:'no-store'})
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(function(data){
+        cacheVehiculos = parsearBilbobusJSON(data);
+        pintarDesdeCache();
+        ocultarAviso();
+        setStatus('ok', cacheVehiculos.length + ' autobuses · ' + horaActual());
+        document.getElementById('ultimaActualizacion').textContent = 'última lectura: ' + horaActual();
+      })
+      .catch(function(err){
+        console.error(err);
+        setStatus('err','Sin datos');
+        mostrarAviso('No se ha podido leer el feed.<br><br>Detalle: ' + esc(err.message));
+      });
+  }
+
+  function horaActual(){
+    return new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  }
+
+  // ------------------------------------------------------------------
+  // PARSEO JSON (ya decodificado del protobuf GTFS-RT por el Worker)
+  // ------------------------------------------------------------------
+  function parsearBilbobusJSON(data){
+    var lista = (data && data.vehiculos) || [];
+    var out = [];
+    for(var i=0;i<lista.length;i++){
+      var v = lista[i];
+      if(typeof v.lat !== 'number' || typeof v.lon !== 'number') continue;
+      out.push({
+        id:            v.vehicleId || (v.routeId+'_'+i),
+        refVehiculo:   v.vehicleId || v.vehicleLabel,
+        lat:           v.lat,
+        lon:           v.lon,
+        linea:         v.routeId || '—',
+        destino:       '', // GTFS-RT VehiclePosition no incluye destino textual
+        direccion:     '',
+        bearing:       typeof v.bearing === 'number' ? v.bearing : null,
+        retrasoSeg:    null, // no disponible en VehiclePosition (estaría en TripUpdate, feed distinto)
+        registrado:    v.timestamp ? new Date(v.timestamp * 1000).toISOString() : null,
+        paradaId:      v.stopId,
+        estadoLlegada: null
+      });
+    }
+    return out;
+  }
+
+  // ------------------------------------------------------------------
+  // PINTADO
+  // ------------------------------------------------------------------
+  function iconoBus(linea, bearing){
+    var rot = typeof bearing==='number' ? bearing : 0;
+    var num = linea || '?';
+    return L.divIcon({
+      className:'',
+      html:
+        '<div style="position:relative;width:34px;height:34px;display:flex;align-items:center;justify-content:center;">' +
+          '<svg width="34" height="34" viewBox="0 0 34 34" style="transform:rotate('+rot+'deg);position:absolute;top:0;left:0;">' +
+            '<circle cx="17" cy="17" r="15" fill="#D7282F" stroke="#1C1B1A" stroke-width="2"/>' +
+            '<polygon points="17,4 22,12 12,12" fill="#1C1B1A"/>' +
+          '</svg>' +
+          '<span style="position:relative;z-index:1;font-size:9px;font-weight:800;color:#F6F2EA;pointer-events:none;line-height:1;">'+num+'</span>'+
+        '</div>',
+      iconSize:[34,34],
+      iconAnchor:[17,17],
+      popupAnchor:[0,-17]
+    });
+  }
+
+  function pintarDesdeCache(){
+    var filtro = document.getElementById('filtroLinea').value.trim().toUpperCase();
+    capaBuses.clearLayers();
+
+    var visibles = cacheVehiculos.filter(function(v){
+      return !filtro || (v.linea||'').toUpperCase().indexOf(filtro)>=0;
+    });
+
+    visibles.forEach(function(v){
+      var marker = L.marker([v.lat, v.lon], {icon: iconoBus(v.linea, v.bearing)});
+      marker.bindPopup(construirPopup(v));
+      marker.on('click', function(e){
+        e.originalEvent._marcadorClick = true;
+        mostrarRuta(v.linea);
+      });
+      marker.addTo(capaBuses);
+    });
+
+    document.getElementById('contadorBuses').textContent =
+      visibles.length + (filtro ? ' / '+cacheVehiculos.length : '') + ' autobuses';
+  }
+
+  function construirPopup(v){
+    var hReg = '';
+    if(v.registrado){ var d=new Date(v.registrado); if(!isNaN(d)) hReg='<p class="popup-meta">Posición: '+d.toLocaleTimeString('es-ES')+'</p>'; }
+    var pHtml = v.paradaId
+      ? '<p class="popup-meta">Próxima parada (ID): '+esc(v.paradaId)+'</p>'
+      : '';
+    return '<span class="popup-linea">Línea '+esc(v.linea)+'</span>'+
+      pHtml+hReg+
+      '<p class="popup-meta">Vehículo: '+esc(v.refVehiculo||v.id)+'</p>';
+  }
+
+  function esc(s){
+    return String(s).replace(/[&<>"']/g,function(c){
+      return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
