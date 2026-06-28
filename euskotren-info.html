@@ -518,8 +518,27 @@ function buscarHorario(){
 
   if(!trenes.length){
     div.innerHTML='<div class="res-vacio">No hay trenes directos entre estos municipios.</div>';
+    // Restaurar todas las líneas al estado normal
+    Object.keys(capaLineas).forEach(function(lid){
+      capaLineas[lid].setStyle({opacity:0.85, weight:4});
+      if(!map.hasLayer(capaEstaciones[lid])) capaEstaciones[lid].addTo(map);
+    });
     return;
   }
+
+  // Resaltar líneas con resultados, atenuar el resto
+  var lineasConResultados = {};
+  trenes.forEach(function(t){ lineasConResultados[t.lid] = true; });
+
+  Object.keys(capaLineas).forEach(function(lid){
+    if(lineasConResultados[lid]){
+      capaLineas[lid].setStyle({opacity:1, weight:6});
+      if(!map.hasLayer(capaEstaciones[lid])) capaEstaciones[lid].addTo(map);
+    } else {
+      capaLineas[lid].setStyle({opacity:0.12, weight:2});
+      if(map.hasLayer(capaEstaciones[lid])) map.removeLayer(capaEstaciones[lid]);
+    }
+  });
 
   var html = '';
   trenes.forEach(function(t){
