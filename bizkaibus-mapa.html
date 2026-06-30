@@ -466,41 +466,172 @@
     });
     var candidatas = Object.keys(candidatasMapa).map(function(k){ return candidatasMapa[k]; });
 
-    if(!candidatas.length){
-      contenedorResultados.innerHTML = '<p class="resultados-vacio">No se ha encontrado ninguna línea directa entre esas dos zonas.</p>';
-      return;
+    if(candidatas.length){
+      // 2a. Hay línea(s) directa(s): leer sus salidas de la categoría de
+      //     día correspondiente (ya están todas cargadas en memoria, sin
+      //     necesidad de ninguna petición adicional).
+      var resultadosPorLinea = candidatas.map(function(c){
+        var bloqueLinea = horariosSemanalesCache[c.linea];
+        var bloqueDir = bloqueLinea && bloqueLinea[c.dir];
+        var salidas = (bloqueDir && bloqueDir[categoria]) || [];
+
+        var salidasValidas = [];
+        var vistos = {}; // dedup por "minOrigen-minDestino": distintos service_id
+                          // del mismo bloque (laborable/sábado/domingo) pueden
+                          // coincidir en horario en este tramo concreto aunque
+                          // difieran en otras paradas del recorrido.
+        salidas.forEach(function(horasPorIndice){
+          var minOrigen = horasPorIndice[c.idxOrigen];
+          var minDestino = horasPorIndice[c.idxDestino];
+          if(minOrigen === undefined || minOrigen === -1) return;
+          if(minDestino === undefined || minDestino === -1) return;
+          var clave = minOrigen + '-' + minDestino;
+          if(vistos[clave]) return;
+          vistos[clave] = true;
+          salidasValidas.push({ minOrigen: minOrigen, minDestino: minDestino });
+        });
+
+        salidasValidas.sort(function(a,b){ return a.minOrigen - b.minOrigen; });
+
+        return { linea: c.linea, direccion: c.dir, salidas: salidasValidas };
+      }).filter(function(r){ return r.salidas.length > 0; });
+
+      if(resultadosPorLinea.length){
+        pintarResultadosTrayecto(resultadosPorLinea, categoria);
+        return;
+      }
     }
 
-    // 2. Para cada línea+dirección candidata, leer sus salidas de la
-    //    categoría de día correspondiente (ya están todas cargadas en
-    //    memoria, sin necesidad de ninguna petición adicional).
-    var resultadosPorLinea = candidatas.map(function(c){
-      var bloqueLinea = horariosSemanalesCache[c.linea];
-      var bloqueDir = bloqueLinea && bloqueLinea[c.dir];
-      var salidas = (bloqueDir && bloqueDir[categoria]) || [];
+    // 2b. No hay línea directa con horario válido: buscamos una combinación
+    //     de dos líneas con trasbordo en una parada común.
+    contenedorResultados.innerHTML = '<p class="resultados-vacio">No hay línea directa, buscando combinaciones con trasbordo…</p>';
 
-      var salidasValidas = [];
-      var vistos = {}; // dedup por "minOrigen-minDestino": distintos service_id
-                        // del mismo bloque (laborable/sábado/domingo) pueden
-                        // coincidir en horario en este tramo concreto aunque
-                        // difieran en otras paradas del recorrido.
-      salidas.forEach(function(horasPorIndice){
-        var minOrigen = horasPorIndice[c.idxOrigen];
-        var minDestino = horasPorIndice[c.idxDestino];
-        if(minOrigen === undefined || minOrigen === -1) return;
-        if(minDestino === undefined || minDestino === -1) return;
-        var clave = minOrigen + '-' + minDestino;
-        if(vistos[clave]) return;
-        vistos[clave] = true;
-        salidasValidas.push({ minOrigen: minOrigen, minDestino: minDestino });
-      });
+    var candidatasTrasbordo = buscarCandidatasConTrasbordo(entradasOrigen, entradasDestino);
+    var resultadosTrasbordo = candidatasTrasbordo.map(function(c){
+      return combinarHorariosTrasbordo(c, categoria);
+    }).filter(function(r){ return r && r.combos.length > 0; });
 
-      salidasValidas.sort(function(a,b){ return a.minOrigen - b.minOrigen; });
+    if(resultadosTrasbordo.length){
+      pintarResultadosTrasbordo(resultadosTrasbordo, categoria);
+    } else {
+      contenedorResultados.innerHTML = '<p class="resultados-vacio">No se ha encontrado ninguna línea directa ni con un trasbordo entre esas dos zonas.</p>';
+    }
+  }
 
-      return { linea: c.linea, direccion: c.dir, salidas: salidasValidas };
-    }).filter(function(r){ return r.salidas.length > 0; });
+  // Devuelve itinerariosCache[linea] probando con y sin la "A" inicial,
+  // igual que en actualizarPanelItinerario.
+  function obtenerRutaLinea(linea){
+    if(!itinerariosCache) return null;
+    return itinerariosCache[linea] || itinerariosCache['A'+linea] || itinerariosCache[linea.replace(/^A/,'')] || null;
+  }
 
-    pintarResultadosTrayecto(resultadosPorLinea, categoria);
+  // Busca combinaciones de 2 líneas (linea1+dir1 -> trasbordo en parada X
+  // -> linea2+dir2) que unan el grupo de paradas de origen con el de
+  // destino. Para cada línea que pasa por el origen, recorre las paradas
+  // siguientes de su itinerario buscando otra línea que, desde esa misma
+  // parada, llegue al grupo de destino más adelante en su recorrido.
+  function buscarCandidatasConTrasbordo(entradasOrigen, entradasDestino){
+    var destinoPorLineaDir = {};
+    entradasDestino.forEach(function(ed){
+      var clave = ed.linea + '|' + ed.dir;
+      if(!destinoPorLineaDir[clave]) destinoPorLineaDir[clave] = [];
+      destinoPorLineaDir[clave].push(ed);
+    });
+
+    var candidatasMapa = {};
+
+    entradasOrigen.forEach(function(eo){
+      var ruta = obtenerRutaLinea(eo.linea);
+      var paradasRuta = ruta && ruta[eo.dir];
+      if(!paradasRuta) return;
+
+      for(var i = eo.idx + 1; i < paradasRuta.length; i++){
+        var stopX = paradasRuta[i];
+        if(!stopX || stopX.id === undefined) continue;
+
+        var entradasX = indiceParadasCache[stopX.id] || [];
+        entradasX.forEach(function(ex){
+          if(ex.linea === eo.linea && ex.dir === eo.dir) return; // misma línea: no es un trasbordo real
+          var listaDestino = destinoPorLineaDir[ex.linea + '|' + ex.dir];
+          if(!listaDestino) return;
+
+          listaDestino.forEach(function(ed){
+            if(ex.idx >= ed.idx) return; // el trasbordo debe quedar antes del destino en la 2ª línea
+
+            var claveCombo = eo.linea + '|' + eo.dir + '>' + ex.linea + '|' + ex.dir;
+            var actual = candidatasMapa[claveCombo];
+            // Preferimos el trasbordo más cercano al origen (menos paradas
+            // en el primer tramo) y, dentro de eso, el que llegue más lejos
+            // en el segundo tramo.
+            if(!actual || i < actual.idxTrasbordo1 ||
+               (i === actual.idxTrasbordo1 && ed.idx > actual.idxDestino)){
+              candidatasMapa[claveCombo] = {
+                linea1: eo.linea, dir1: eo.dir, idxOrigen: eo.idx, idxTrasbordo1: i,
+                paradaTrasbordoId: stopX.id,
+                paradaTrasbordoNombre: stopX.nombre || ('Parada ' + stopX.id),
+                linea2: ex.linea, dir2: ex.dir, idxTrasbordo2: ex.idx, idxDestino: ed.idx
+              };
+            }
+          });
+        });
+      }
+    });
+
+    return Object.keys(candidatasMapa).map(function(k){ return candidatasMapa[k]; });
+  }
+
+  // A partir de una candidata de trasbordo, calcula las combinaciones de
+  // horario reales: para cada salida del primer tramo, busca la primera
+  // salida del segundo tramo que sea posible coger (con al menos 1 minuto
+  // de margen tras la llegada a la parada de trasbordo).
+  function combinarHorariosTrasbordo(c, categoria){
+    var bloque1 = horariosSemanalesCache[c.linea1];
+    var salidas1 = (bloque1 && bloque1[c.dir1] && bloque1[c.dir1][categoria]) || [];
+    var bloque2 = horariosSemanalesCache[c.linea2];
+    var salidas2 = (bloque2 && bloque2[c.dir2] && bloque2[c.dir2][categoria]) || [];
+
+    var tramos1 = [];
+    salidas1.forEach(function(h){
+      var minOrigen = h[c.idxOrigen], minLlegada = h[c.idxTrasbordo1];
+      if(minOrigen === undefined || minOrigen === -1) return;
+      if(minLlegada === undefined || minLlegada === -1) return;
+      tramos1.push({ minOrigen: minOrigen, minLlegada: minLlegada });
+    });
+
+    var tramos2 = [];
+    salidas2.forEach(function(h){
+      var minSalida = h[c.idxTrasbordo2], minDestino = h[c.idxDestino];
+      if(minSalida === undefined || minSalida === -1) return;
+      if(minDestino === undefined || minDestino === -1) return;
+      tramos2.push({ minSalida: minSalida, minDestino: minDestino });
+    });
+    tramos2.sort(function(a,b){ return a.minSalida - b.minSalida; });
+
+    var MARGEN_MIN_TRASBORDO = 1; // minutos mínimos para bajar y subir de bus
+    var vistos = {};
+    var combos = [];
+    tramos1.forEach(function(t1){
+      for(var i = 0; i < tramos2.length; i++){
+        if(tramos2[i].minSalida >= t1.minLlegada + MARGEN_MIN_TRASBORDO){
+          var t2 = tramos2[i];
+          var clave = t1.minOrigen + '-' + t1.minLlegada + '-' + t2.minSalida + '-' + t2.minDestino;
+          if(!vistos[clave]){
+            vistos[clave] = true;
+            combos.push({
+              minOrigen: t1.minOrigen, minLlegadaTrasbordo: t1.minLlegada,
+              minSalidaTrasbordo: t2.minSalida, minDestino: t2.minDestino
+            });
+          }
+          break; // la primera salida2 posible es la combinación natural para esta salida1
+        }
+      }
+    });
+    combos.sort(function(a,b){ return a.minOrigen - b.minOrigen; });
+
+    return {
+      linea1: c.linea1, dir1: c.dir1, linea2: c.linea2, dir2: c.dir2,
+      paradaTrasbordo: c.paradaTrasbordoNombre, combos: combos
+    };
   }
 
   function minutosAHora(min){
@@ -534,9 +665,29 @@
     }).join('');
   }
 
-  // ------------------------------------------------------------------
-  // ITINERARIOS (paradas por línea, datos estáticos del GTFS oficial)
-  // ------------------------------------------------------------------
+  function pintarResultadosTrasbordo(resultados, categoria){
+    var contenedor = document.getElementById('resultadosTrayecto');
+    var etiquetaCategoria = {laborable:'laborable (L-V)', sabado:'sábado', domingo:'domingo'}[categoria] || categoria;
+
+    var aviso = '<p style="font-size:11px;color:#8a857d;margin:0 0 10px;">No hay línea directa. Trayecto con trasbordo, horario típico de ' +
+      esc(etiquetaCategoria) + '. Aún no se tienen en cuenta festivos ni el horario especial de verano.</p>';
+
+    contenedor.innerHTML = aviso + resultados.map(function(r){
+      var listaCombos = r.combos.slice(0, 6).map(function(c){
+        return minutosAHora(c.minOrigen) + ' → ' + minutosAHora(c.minLlegadaTrasbordo) +
+          ' &nbsp;|&nbsp; ' + minutosAHora(c.minSalidaTrasbordo) + ' → ' + minutosAHora(c.minDestino);
+      }).join('<br>');
+      var extra = r.combos.length > 6 ? ' …' : '';
+      return '<div class="resultado-linea">' +
+        '<div class="cab"><b>Línea ' + esc(r.linea1) + ' (' + (r.dir1 === '0' ? 'Ida' : 'Vuelta') + ')</b>' +
+          '<span style="font-size:11px;color:#8a857d;"> → trasbordo en ' + esc(r.paradaTrasbordo) + ' → </span>' +
+          '<b>Línea ' + esc(r.linea2) + ' (' + (r.dir2 === '0' ? 'Ida' : 'Vuelta') + ')</b></div>' +
+        '<div class="salidas">' + listaCombos + esc(extra) + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+
   function cargarItinerarios(){
     fetch(URL_ITINERARIOS)
       .then(function(r){ return r.json(); })
