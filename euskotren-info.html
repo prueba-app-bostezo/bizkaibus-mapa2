@@ -145,13 +145,13 @@
 (function(){
   // Tramo L3/E1/E3/E4 compartido: Kukullaga → Matiko (7 estaciones subterráneas)
   var TRAMO_METRO = [
-    {n:'Kukullaga-Etxebarri', c:[43.2708,-2.9298]},
-    {n:'Otxarkoaga',          c:[43.269,-2.935]},
-    {n:'Txurdinaga',          c:[43.2655,-2.9382]},
-    {n:'Zurbaranbarri',       c:[43.2618,-2.937]},
-    {n:'Zazpikaleak/Casco Viejo', c:[43.2578,-2.9228]},
-    {n:'Uribarri',            c:[43.263,-2.9325]},
-    {n:'Matiko',              c:[43.25924,-2.92935]},
+    {n:'Kukullaga-Etxebarri', c:[43.251142,-2.889764]},
+    {n:'Otxarkoaga',          c:[43.259503,-2.900123]},
+    {n:'Txurdinaga',          c:[43.258051,-2.906729]},
+    {n:'Zurbaranbarri',       c:[43.264911,-2.914977]},
+    {n:'Zazpikaleak/Casco Viejo', c:[43.259983,-2.922197]},
+    {n:'Uribarri',            c:[43.267102,-2.921277]},
+    {n:'Matiko',              c:[43.268919,-2.925007]},
   ];
 
   var LINEAS = [
@@ -160,31 +160,31 @@
       desc:'Matiko – Durango / Traña-Abadiño',
       estaciones:[
         // Tramo metro compartido
-        {n:'Matiko',              c:[43.25924,-2.92935]},
-        {n:'Uribarri',            c:[43.263,-2.9325]},
-        {n:'Zazpikaleak/Casco Viejo', c:[43.2578,-2.9228]},
-        {n:'Zurbaranbarri',       c:[43.2618,-2.937]},
-        {n:'Txurdinaga',          c:[43.2655,-2.9382]},
-        {n:'Otxarkoaga',          c:[43.269,-2.935]},
-        {n:'Kukullaga-Etxebarri', c:[43.2708,-2.9298]},
+        {n:'Matiko',              c:[43.268919,-2.925007]},
+        {n:'Uribarri',            c:[43.267102,-2.921277]},
+        {n:'Zazpikaleak/Casco Viejo', c:[43.259983,-2.922197]},
+        {n:'Zurbaranbarri',       c:[43.264911,-2.914977]},
+        {n:'Txurdinaga',          c:[43.258051,-2.906729]},
+        {n:'Otxarkoaga',          c:[43.259503,-2.900123]},
+        {n:'Kukullaga-Etxebarri', c:[43.251142,-2.889764]},
         // Tramo clásico hacia Durango (sale de Kukullaga hacia Atxuri y Basarrate)
-        {n:'Etxebarri',           c:[43.2279,-2.8846]},
-        {n:'Ariz (Basauri)',       c:[43.239,-2.882]},
+        {n:'Etxebarri',           c:[43.245623,-2.891068]},
+        {n:'Ariz (Basauri)',       c:[43.240313,-2.879282]},
         {n:'Basarrate',           c:[43.2565,-2.88]},
-        {n:'Bolueta',             c:[43.2608,-2.8939]},
+        {n:'Bolueta',             c:[43.247252,-2.904919]},
         // Aquí el tren sale por Atxuri hacia Durango
-        {n:'Zuhatzu (Galdakao)',   c:[43.2204,-2.872]},
-        {n:'Usansolo',             c:[43.2152,-2.8596]},
-        {n:'Bedia',                c:[43.2072,-2.8383]},
-        {n:'Lemoa',                c:[43.211,-2.82]},
-        {n:'Amorebieta-Geralekua', c:[43.2187,-2.737]},
-        {n:'Amorebieta-Geltokia',  c:[43.2239,-2.7327]},
+        {n:'Zuhatzu (Galdakao)',   c:[43.228896,-2.853572]},
+        {n:'Usansolo',             c:[43.217819,-2.821656]},
+        {n:'Bedia',                c:[43.206171,-2.798030]},
+        {n:'Lemoa',                c:[43.207092,-2.775247]},
+        {n:'Amorebieta-Geralekua', c:[43.221820,-2.734876]},
+        {n:'Amorebieta-Geltokia',  c:[43.216878,-2.736627]},
         {n:'Boroa',                c:[43.2138,-2.7022]},
         {n:'Iurreta',              c:[43.1888,-2.6631]},
-        {n:'Durango',              c:[43.1726,-2.6345]},
-        {n:'Traña-Abadiño',        c:[43.167,-2.614]},
-        {n:'Berriz',               c:[43.165,-2.598]},
-        {n:'Zaldibar',             c:[43.159,-2.582]},
+        {n:'Durango',              c:[43.169457,-2.634787]},
+        {n:'Traña-Abadiño',        c:[43.165337,-2.612701]},
+        {n:'Berriz',               c:[43.168405,-2.574515]},
+        {n:'Zaldibar',             c:[43.171641,-2.547899]},
       ]
     },
     {
@@ -192,19 +192,19 @@
       desc:'Kukullaga – Lezama (Txorierri)',
       estaciones:[
         // Tramo metro compartido (mismo túnel que E1/E4/L3)
-        {n:'Kukullaga-Etxebarri', c:[43.2708,-2.9298]},
-        {n:'Otxarkoaga',          c:[43.269,-2.935]},
-        {n:'Txurdinaga',          c:[43.2655,-2.9382]},
-        {n:'Zurbaranbarri',       c:[43.2618,-2.937]},
-        {n:'Zazpikaleak/Casco Viejo', c:[43.2578,-2.9228]},
-        {n:'Uribarri',            c:[43.263,-2.9325]},
-        {n:'Matiko',              c:[43.25924,-2.92935]},
+        {n:'Kukullaga-Etxebarri', c:[43.251142,-2.889764]},
+        {n:'Otxarkoaga',          c:[43.259503,-2.900123]},
+        {n:'Txurdinaga',          c:[43.258051,-2.906729]},
+        {n:'Zurbaranbarri',       c:[43.264911,-2.914977]},
+        {n:'Zazpikaleak/Casco Viejo', c:[43.259983,-2.922197]},
+        {n:'Uribarri',            c:[43.267102,-2.921277]},
+        {n:'Matiko',              c:[43.268919,-2.925007]},
         // Tunel nuevo bajo el Archanda hacia Txorierri
-        {n:'Ola (Sondika)',        c:[43.302,-2.946]},
-        {n:'Sondika',             c:[43.299,-2.939]},
-        {n:'Derio',               c:[43.301,-2.91]},
-        {n:'Zamudio',             c:[43.3044,-2.8723]},
-        {n:'Lezama',              c:[43.3338,-2.8459]},
+        {n:'Ola (Sondika)',        c:[43.291849,-2.925227]},
+        {n:'Sondika',             c:[43.298293,-2.927764]},
+        {n:'Derio',               c:[43.290827,-2.887276]},
+        {n:'Zamudio',             c:[43.284342,-2.864839]},
+        {n:'Lezama',              c:[43.273257,-2.835634]},
       ]
     },
     {
@@ -212,35 +212,35 @@
       desc:'Matiko – Bermeo (Urdaibai)',
       estaciones:[
         // Tramo metro compartido
-        {n:'Matiko',              c:[43.25924,-2.92935]},
-        {n:'Uribarri',            c:[43.263,-2.9325]},
-        {n:'Zazpikaleak/Casco Viejo', c:[43.2578,-2.9228]},
-        {n:'Zurbaranbarri',       c:[43.2618,-2.937]},
-        {n:'Txurdinaga',          c:[43.2655,-2.9382]},
-        {n:'Otxarkoaga',          c:[43.269,-2.935]},
-        {n:'Kukullaga-Etxebarri', c:[43.2708,-2.9298]},
+        {n:'Matiko',              c:[43.268919,-2.925007]},
+        {n:'Uribarri',            c:[43.267102,-2.921277]},
+        {n:'Zazpikaleak/Casco Viejo', c:[43.259983,-2.922197]},
+        {n:'Zurbaranbarri',       c:[43.264911,-2.914977]},
+        {n:'Txurdinaga',          c:[43.258051,-2.906729]},
+        {n:'Otxarkoaga',          c:[43.259503,-2.900123]},
+        {n:'Kukullaga-Etxebarri', c:[43.251142,-2.889764]},
         // Tramo clásico compartido con E1 hasta Amorebieta
-        {n:'Etxebarri',           c:[43.2279,-2.8846]},
-        {n:'Ariz (Basauri)',       c:[43.239,-2.882]},
-        {n:'Bolueta',             c:[43.2608,-2.8939]},
-        {n:'Zuhatzu (Galdakao)',   c:[43.2204,-2.872]},
-        {n:'Usansolo',             c:[43.2152,-2.8596]},
-        {n:'Bedia',                c:[43.2072,-2.8383]},
-        {n:'Lemoa',                c:[43.211,-2.82]},
-        {n:'Amorebieta-Geralekua', c:[43.2187,-2.737]},
-        {n:'Amorebieta-Geltokia',  c:[43.2239,-2.7327]},
+        {n:'Etxebarri',           c:[43.245623,-2.891068]},
+        {n:'Ariz (Basauri)',       c:[43.240313,-2.879282]},
+        {n:'Bolueta',             c:[43.247252,-2.904919]},
+        {n:'Zuhatzu (Galdakao)',   c:[43.228896,-2.853572]},
+        {n:'Usansolo',             c:[43.217819,-2.821656]},
+        {n:'Bedia',                c:[43.206171,-2.798030]},
+        {n:'Lemoa',                c:[43.207092,-2.775247]},
+        {n:'Amorebieta-Geralekua', c:[43.221820,-2.734876]},
+        {n:'Amorebieta-Geltokia',  c:[43.216878,-2.736627]},
         // Ramal Urdaibai hacia Bermeo
-        {n:'Zugastieta (Muxika)',   c:[43.242,-2.672]},
-        {n:'Muxika',               c:[43.258,-2.675]},
-        {n:'Gernika-Lurgorri',     c:[43.3138,-2.677]},
-        {n:'Gernika-Institutua',   c:[43.3159,-2.6773]},
-        {n:'Gernika-Lumo',         c:[43.3159,-2.675]},
-        {n:'Forua',                c:[43.328,-2.678]},
-        {n:'S. Kristobal (Busturia)',c:[43.342,-2.681]},
-        {n:'Axpe (Busturia)',       c:[43.353,-2.685]},
-        {n:'Itsasbegi (Busturia)', c:[43.365,-2.688]},
-        {n:'Mundaka',              c:[43.4048,-2.6976]},
-        {n:'Bermeo',               c:[43.4227,-2.724]},
+        {n:'Zugastieta (Muxika)',   c:[43.252154,-2.692748]},
+        {n:'Muxika',               c:[43.286788,-2.689493]},
+        {n:'Gernika-Lurgorri',     c:[43.306722,-2.680315]},
+        {n:'Gernika-Institutua',   c:[43.319882,-2.676842]},
+        {n:'Gernika-Lumo',         c:[43.314559,-2.676106]},
+        {n:'Forua',                c:[43.332384,-2.673426]},
+        {n:'S. Kristobal (Busturia)',c:[43.367813,-2.690337]},
+        {n:'Axpe (Busturia)',       c:[43.380106,-2.693181]},
+        {n:'Itsasbegi (Busturia)', c:[43.391100,-2.693867]},
+        {n:'Mundaka',              c:[43.408870,-2.700911]},
+        {n:'Bermeo',               c:[43.417771,-2.723233]},
       ]
     },
     {
@@ -248,9 +248,9 @@
       desc:'Basauri – Kabiezes',
       estaciones:[
         {n:'Basauri',             c:[43.2365,-2.8914]},
-        {n:'Ariz',                c:[43.239,-2.882]},
-        {n:'Etxebarri',           c:[43.2279,-2.8846]},
-        {n:'Erandio',             c:[43.305,-2.968]},
+        {n:'Ariz',                c:[43.240313,-2.879282]},
+        {n:'Etxebarri',           c:[43.245623,-2.891068]},
+        {n:'Erandio',             c:[43.291318,-2.969768]},
         {n:'Ansio',               c:[43.317,-2.982]},
         {n:'Gurutzeta/Cruces',    c:[43.31,-3.002]},
         {n:'Sestao',              c:[43.3094,-3.0098]},
@@ -264,24 +264,24 @@
       id:'L3', nombre:'L3', color:'#E040A0',
       desc:'Kukullaga – Matiko (metro)',
       estaciones:[
-        {n:'Kukullaga-Etxebarri', c:[43.2708,-2.9298]},
-        {n:'Otxarkoaga',          c:[43.269,-2.935]},
-        {n:'Txurdinaga',          c:[43.2655,-2.9382]},
-        {n:'Zurbaranbarri',       c:[43.2618,-2.937]},
-        {n:'Zazpikaleak/Casco Viejo', c:[43.2578,-2.9228]},
-        {n:'Uribarri',            c:[43.263,-2.9325]},
-        {n:'Matiko',              c:[43.25924,-2.92935]},
+        {n:'Kukullaga-Etxebarri', c:[43.251142,-2.889764]},
+        {n:'Otxarkoaga',          c:[43.259503,-2.900123]},
+        {n:'Txurdinaga',          c:[43.258051,-2.906729]},
+        {n:'Zurbaranbarri',       c:[43.264911,-2.914977]},
+        {n:'Zazpikaleak/Casco Viejo', c:[43.259983,-2.922197]},
+        {n:'Uribarri',            c:[43.267102,-2.921277]},
+        {n:'Matiko',              c:[43.268919,-2.925007]},
       ]
     },
     {
       id:'TR', nombre:'TR', color:'#70AD47',
       desc:'Atxuri – La Casilla (Tranvía)',
       estaciones:[
-        {n:'Atxuri',              c:[43.2542,-2.9219]},
-        {n:'San Mamés',           c:[43.2639,-2.949]},
-        {n:'Basurto/Hospital',    c:[43.258,-2.948]},
-        {n:'La Casilla',          c:[43.253,-2.951]},
-        {n:'Bolueta',             c:[43.2608,-2.8939]},
+        {n:'Atxuri',              c:[43.254113,-2.921513]},
+        {n:'San Mamés',           c:[43.261742,-2.948939]},
+        {n:'Basurto/Hospital',    c:[43.257993,-2.949072]},
+        {n:'La Casilla',          c:[43.257767,-2.944349]},
+        {n:'Bolueta',             c:[43.247252,-2.904919]},
       ]
     },
   ];
@@ -356,19 +356,6 @@
 </html>
 <script>
 // ── Buscador flotante ────────────────────────────────────────────────────────
-var DB = null;
-
-fetch('horarios_verano.json')
-  .then(function(r){ return r.json(); })
-  .then(function(data){
-    DB = data;
-    var municipios = Object.keys(DB.municipios).sort();
-    var origen  = document.getElementById('b-origen');
-    var destino = document.getElementById('b-destino');
-    municipios.forEach(function(m){
-      origen.innerHTML  += '<option value="'+m+'">'+m+'</option>';
-      destino.innerHTML += '<option value="'+m+'">'+m+'</option>';
-    });
     var hoy = new Date();
     document.getElementById('b-fecha').value = hoy.toISOString().split('T')[0];
   });
